@@ -8,13 +8,31 @@ import (
 )
 
 type Node struct {
-	node  Token
-	left  *Node
-	right *Node
+	node   Token
+	parent *Node
+	left   *Node
+	right  *Node
 }
 
 type Tree struct {
 	head *Node
+}
+
+func (self *Node) toStr() string {
+	if self.node.valueString == "" {
+		return fmt.Sprintf("%f", self.node.valueNumber)
+	}
+	return self.node.valueString
+}
+
+func (self *Node) sister() *Node {
+	if self.parent == nil {
+		return nil
+	}
+	if self.parent.left == self {
+		return self.parent.right
+	}
+	return self.parent.left
 }
 
 type parseError struct{}
@@ -24,7 +42,7 @@ func (m *parseError) Error() string {
 }
 
 func newNode(token Token) Node {
-	newNode := Node{node: token, left: nil, right: nil}
+	newNode := Node{node: token, parent: nil, left: nil, right: nil}
 	return newNode
 }
 
@@ -40,6 +58,7 @@ func tokenToNode(tokenTab []Token) []Node {
 func linkNode(parent Node, left Node, right Node) Node {
 	parent.left = &left
 	parent.right = &right
+	parent.parent = &parent
 
 	return parent
 }
@@ -54,7 +73,8 @@ func reduceNodeTab(nodeTab []Node, isOperator func(string) bool) []Node {
 				indexes = append(indexes, i-1)
 				indexes = append(indexes, i+1)
 				nodeTab[i] = linkNode(nodeTab[i], nodeTab[i-1], nodeTab[i+1])
-				//fmt.Println(nodeTab[i], nodeTab[i].left, nodeTab[i].right)
+				fmt.Printf("\nReduce Node Tab\n")
+				fmt.Println(nodeTab[i].left.toStr(), nodeTab[i].parent.toStr(), nodeTab[i].right.toStr())
 				modified = true
 				break
 			}
@@ -67,7 +87,7 @@ func reduceNodeTab(nodeTab []Node, isOperator func(string) bool) []Node {
 			newNodeTab = append(newNodeTab, nodeTab[i])
 		}
 		nodeTab = newNodeTab
-		fmt.Println("> ", nodeTab)
+		// fmt.Println("> ", nodeTab)
 	}
 	return nodeTab
 }
@@ -86,14 +106,14 @@ func createAST(tokenTab []Token) (Node, error) {
 	nodeTab := tokenToNode(tokenTab)
 
 	nodeTab = reduceNodeTab(nodeTab, func(s string) bool { return s == "^" })
-	fmt.Println(nodeTab)
+	// fmt.Println(nodeTab)
 	nodeTab = reduceNodeTab(nodeTab, func(s string) bool { return s == "*" || s == "/" })
-	fmt.Println(nodeTab)
+	// fmt.Println(nodeTab)
 	nodeTab = reduceNodeTab(nodeTab, func(s string) bool { return s == "+" || s == "-" })
-	fmt.Println(nodeTab)
+	// fmt.Println(nodeTab)
 	nodeTab = reduceNodeTab(nodeTab, func(s string) bool { return s == "=" })
 
-	fmt.Println(nodeTab)
+	// fmt.Println(nodeTab)
 	// printNode(&nodeTab[0])
 	if len(nodeTab) != 1 {
 		return nodeTab[0], &parseError{}
@@ -112,8 +132,8 @@ func nodeStr(node *Node) string {
 }
 
 func print(file *os.File, node *Node) {
-	fmt.Print("-> ")
-	fmt.Println(*node)
+	// fmt.Print("-> ")
+	// fmt.Println(*node)
 	var out string
 	out += "\t" + fmt.Sprintf("%#p", node) + " [label=\"" + nodeStr(node) + "\"]\n"
 	// out += ";\n"
@@ -129,11 +149,11 @@ func print(file *os.File, node *Node) {
 }
 
 func printNode(node *Node) {
-	fmt.Println("Creating dotgraph")
-	fmt.Println("root is:", node)
+	// fmt.Println("Creating dotgraph")
+	// fmt.Println("root is:", node)
 	file, errs := os.Create("graph.dot")
 	if errs != nil {
-		fmt.Println("Failed to create file:", errs)
+		// fmt.Println("Failed to create file:", errs)
 		return
 	}
 	_, errs = file.WriteString("digraph {\n\tedge [arrowhead=none];\n\n")

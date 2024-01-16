@@ -50,12 +50,12 @@ func lexerFunction(argument string) ([]Token, error) {
 	}
 	tokensTab = append(tokensTab, tmpToken)
 	tokensTab = removeWhitespaces(tokensTab)
-	fmt.Println(tokensTab)
+	// fmt.Println(tokensTab)
 	tokensTab, err = cleanToken(tokensTab)
 	if err != nil {
 		return tokensTab, err
 	}
-	fmt.Println(tokensTab)
+	// fmt.Println(tokensTab)
 	return tokensTab, nil
 }
 
