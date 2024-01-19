@@ -19,19 +19,28 @@ type Tree struct {
 }
 
 func (self *Node) toStr() string {
+	if self == nil {
+		return "nil"
+	}
 	if self.node.valueString == "" {
 		return fmt.Sprintf("%f", self.node.valueNumber)
 	}
 	return self.node.valueString
 }
 
+func (self *Node) getType() enumType {
+	return self.node.tokenType
+}
+
 func (self *Node) sister() *Node {
 	if self.parent == nil {
 		return nil
 	}
+	fmt.Printf("Parent : %s\n", self.parent.toStr())
 	if self.parent.left == self {
 		return self.parent.right
 	}
+
 	return self.parent.left
 }
 
@@ -55,15 +64,17 @@ func tokenToNode(tokenTab []Token) []Node {
 	return nodeTab
 }
 
-func linkNode(parent Node, left Node, right Node) Node {
-	parent.left = &left
-	parent.right = &right
-	parent.parent = &parent
+func linkNode(current Node, left Node, right Node) Node {
+	current.left = &left
+	current.right = &right
+	left.parent = &current
+	right.parent = &current
 
-	return parent
+	return current
 }
 
 func reduceNodeTab(nodeTab []Node, isOperator func(string) bool) []Node {
+
 	modified := true
 	for modified {
 		modified = false
@@ -73,8 +84,6 @@ func reduceNodeTab(nodeTab []Node, isOperator func(string) bool) []Node {
 				indexes = append(indexes, i-1)
 				indexes = append(indexes, i+1)
 				nodeTab[i] = linkNode(nodeTab[i], nodeTab[i-1], nodeTab[i+1])
-				fmt.Printf("\nReduce Node Tab\n")
-				fmt.Println(nodeTab[i].left.toStr(), nodeTab[i].parent.toStr(), nodeTab[i].right.toStr())
 				modified = true
 				break
 			}
@@ -87,7 +96,6 @@ func reduceNodeTab(nodeTab []Node, isOperator func(string) bool) []Node {
 			newNodeTab = append(newNodeTab, nodeTab[i])
 		}
 		nodeTab = newNodeTab
-		// fmt.Println("> ", nodeTab)
 	}
 	return nodeTab
 }
@@ -106,21 +114,13 @@ func createAST(tokenTab []Token) (Node, error) {
 	nodeTab := tokenToNode(tokenTab)
 
 	nodeTab = reduceNodeTab(nodeTab, func(s string) bool { return s == "^" })
-	// fmt.Println(nodeTab)
 	nodeTab = reduceNodeTab(nodeTab, func(s string) bool { return s == "*" || s == "/" })
-	// fmt.Println(nodeTab)
 	nodeTab = reduceNodeTab(nodeTab, func(s string) bool { return s == "+" || s == "-" })
-	// fmt.Println(nodeTab)
 	nodeTab = reduceNodeTab(nodeTab, func(s string) bool { return s == "=" })
 
-	// fmt.Println(nodeTab)
-	// printNode(&nodeTab[0])
 	if len(nodeTab) != 1 {
 		return nodeTab[0], &parseError{}
 	}
-	// printOperation(&nodeTab[0])
-	// fmt.Println()
-	// fmt.Println(nodeTab)
 	return nodeTab[0], nil
 }
 

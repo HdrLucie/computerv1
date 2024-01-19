@@ -2,7 +2,7 @@ digraph {
 	edge [arrowhead=none];
 
 	c000118240 [label="20"]
-	c000118100 [label="5"]
+	c000118100 [label="x"]
 	c000118140 [label="2"]
 	c000118280 [label="^"]
 	c000118280 -> c000118100[label="L"];
