@@ -17,6 +17,6 @@ func main() {
 		fmt.Printf("Error - %s\n", err)
 		os.Exit(1)
 	}
-	printNode(&ast)
-	createExponentTab(&ast)
+	printNode(ast)
+	createExponentTab(ast)
 }

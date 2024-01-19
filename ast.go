@@ -36,11 +36,10 @@ func (self *Node) sister() *Node {
 	if self.parent == nil {
 		return nil
 	}
-	fmt.Printf("Parent : %s\n", self.parent.toStr())
+	fmt.Printf("Parent ouhouhou: %s\n", self.parent.toStr())
 	if self.parent.left == self {
 		return self.parent.right
 	}
-
 	return self.parent.left
 }
 
@@ -55,25 +54,26 @@ func newNode(token Token) Node {
 	return newNode
 }
 
-func tokenToNode(tokenTab []Token) []Node {
-	var nodeTab []Node
+func tokenToNode(tokenTab []Token) []*Node {
+	var nodeTab []*Node
 
 	for _, token := range tokenTab {
-		nodeTab = append(nodeTab, newNode(token))
+		tmpNode := newNode(token)
+		nodeTab = append(nodeTab, &tmpNode)
 	}
 	return nodeTab
 }
 
-func linkNode(current Node, left Node, right Node) Node {
-	current.left = &left
-	current.right = &right
-	left.parent = &current
-	right.parent = &current
+func linkNode(current *Node, left *Node, right *Node) *Node {
+	current.left = left
+	current.right = right
+	left.parent = current
+	right.parent = current
 
 	return current
 }
 
-func reduceNodeTab(nodeTab []Node, isOperator func(string) bool) []Node {
+func reduceNodeTab(nodeTab []*Node, isOperator func(string) bool) []*Node {
 
 	modified := true
 	for modified {
@@ -88,7 +88,7 @@ func reduceNodeTab(nodeTab []Node, isOperator func(string) bool) []Node {
 				break
 			}
 		}
-		var newNodeTab []Node
+		var newNodeTab []*Node
 		for i := range nodeTab {
 			if slices.Contains(indexes, i) {
 				continue
@@ -110,7 +110,7 @@ func printOperation(node *Node) {
 	}
 }
 
-func createAST(tokenTab []Token) (Node, error) {
+func createAST(tokenTab []Token) (*Node, error) {
 	nodeTab := tokenToNode(tokenTab)
 
 	nodeTab = reduceNodeTab(nodeTab, func(s string) bool { return s == "^" })
